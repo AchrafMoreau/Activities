@@ -42,35 +42,48 @@ public class AuthenticationService {
     private PasswordEncoder passwordEncoder;
 
     public ResponseEntity<?> login(UserLoginDTO userLoginDTO){
-        System.out.println(userLoginDTO.getEmail() + " " + userLoginDTO.getPassword() + " " + userLoginDTO.getUsername());
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userLoginDTO.getEmail(), userLoginDTO.getPassword())
-        );
+        Map<String, Object> res = new HashMap<>();
+        try{
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(userLoginDTO.getEmail(), userLoginDTO.getPassword())
+            );
+            System.out.println("Hello");
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtUtil.generateToken(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtUtil.generateToken(authentication);
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities()
-                .stream()
-                .map(auth -> auth.getAuthority())
-                .collect(Collectors.toList());
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            List<String> roles = userDetails.getAuthorities()
+                    .stream()
+                    .map(auth -> auth.getAuthority())
+                    .collect(Collectors.toList());
 
-        Map<String, String> response = new HashMap<>();
-        response.put("username", userDetails.getUsername());
-        response.put("id", userDetails.getId());
-        response.put("email", userDetails.getEmail());
+            res.put("username", userDetails.getName());
+            res.put("id", userDetails.getId());
+            res.put("email", userDetails.getEmail());
+            res.put("roles", roles);
+            res.put("token", token);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, token.toString())
-                .body(response);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, token.toString())
+                    .body(res);
+        }catch (Exception e){
+            res.put("message", "Invalid Credential");
+            System.out.println(res);
+            return ResponseEntity.status(401)
+                    .body(res);
+        }
     }
 
-    public String register(UserRegisterDTO userDTO){
+    public ResponseEntity<?> register(UserRegisterDTO userDTO){
+        Map<String, String> res = new HashMap<>();
         Optional<User> user = userRepository.findByUsername(userDTO.getUsername());
         boolean existingEmail = userRepository.existsByEmail(userDTO.getEmail());
-        if(user.isPresent() && existingEmail)
-            return "User Already Exist";
+        if(user.isPresent() && existingEmail) {
+            res.put("message", "User Already Exist");
+            return ResponseEntity.status(409)
+                    .body(res);
+        }
         try{
             Set<Role> roles = new HashSet<>();
             userDTO.getRoles().stream().forEach(elm -> {
@@ -102,7 +115,9 @@ public class AuthenticationService {
 
                 newUser.setRoles(roles);
                 userRepository.save(newUser);
-                return "User Was Created Successfully !";
+                res.put("message", "User Was Created Successfully !");
+                return ResponseEntity.ok()
+                        .body(res);
         }catch (Exception e){
             throw new IllegalArgumentException(e.getMessage());
         }

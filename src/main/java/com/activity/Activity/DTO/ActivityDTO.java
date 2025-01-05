@@ -19,6 +19,16 @@ public class ActivityDTO {
     private String highlight;
     private String notSuitable;
     private Long agency;
+    private Long city;
+
+    public Long getCity() {
+        return city;
+    }
+
+    public void setCity(Long city) {
+        this.city = city;
+    }
+
 
     public Long getAgency() {
         return agency;

@@ -10,9 +10,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AgencyService {
@@ -34,29 +39,75 @@ public class AgencyService {
                 .orElseThrow(() -> new IllegalArgumentException("Agency Was Not Found"));
     }
 
-    public void create(AgencyDTO agencyDTO){
+    public ResponseEntity<?> create(AgencyDTO agencyDTO){
         Agency agency = mapper.map(agencyDTO, Agency.class);
-        agencyRepository.save(agency);
+        Map<String, Object> res = new HashMap<>();
+        try{
+            agencyRepository.save(agency);
+            res.put("message", "Agency Created Successfully");
+            return ResponseEntity.ok()
+                    .body(res);
+        }catch (Exception e){
+            res.put("message", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(res);
+        }
     }
 
-    public void update(AgencyDTO agencyDTO, Long id){
+    public ResponseEntity<?> update(AgencyDTO agencyDTO, Long id){
+        Map<String, Object> res = new HashMap<>();
         Agency agency = agencyRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Agency Was Not Found"));
+                .orElse(null);
+        if(agency == null){
+            res.put("message", "Agency Was Not Found");
+            return ResponseEntity.status(404).body(res);
+        }
 
-//        this it should be something that handel if some attribute is null insert the old one
-        agency.setName(agencyDTO.getName());
-        agency.setDescription(agencyDTO.getDescription());
-        agency.setCategory(agencyDTO.getCategory());
-        agency.setLocation(agencyDTO.getLocation());
-        agency.setImages(agencyDTO.getImages());
-        agency.setCarryingCapacity(agencyDTO.getCarryingCapacity());
+        Optional.ofNullable(agencyDTO.getName()).ifPresent(agency::setName);
+        Optional.ofNullable(agencyDTO.getDescription()).ifPresent(agency::setDescription);
+        Optional.ofNullable(agencyDTO.getCategory()).ifPresent(agency::setCategory);
+        Optional.ofNullable(agencyDTO.getLocation()).ifPresent(agency::setLocation);
+        Optional.of(agencyDTO.getCarryingCapacity()).ifPresent(agency::setCarryingCapacity);
+        Optional.ofNullable(agencyDTO.getImages()).ifPresent(agency::setImages);
 
-        agencyRepository.save(agency);
+        try {
+            agencyRepository.save(agency);
+            res.put("message", "Agency Updated Successfully");
+            return ResponseEntity.ok()
+                    .body(res);
+        }catch (DataAccessException e){
+            res.put("message", "DATABASE Error: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(res);
+        }catch (Exception e){
+            res.put("message", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(res);
+        }
     }
 
-    public void delete(Long id){
+    public ResponseEntity<?> delete(Long id){
+        Map<String, Object> res = new HashMap<>();
         Agency agency = agencyRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Agency Was Not Found"));
-        agencyRepository.delete(agency);
+            .orElse(null);
+        if(agency == null){
+            res.put("message", "Agency Was Not Found");
+            return ResponseEntity.status(404)
+                    .body(res);
+        }
+        try {
+            agencyRepository.delete(agency);
+            res.put("message", "Agency Deleted Successfully");
+            return ResponseEntity.ok()
+                    .body(res);
+        }catch (DataAccessException e){
+            res.put("message", "DATABASE Error: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(res);
+        }catch (Exception e){
+            res.put("message", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(res);
+        }
     }
 }

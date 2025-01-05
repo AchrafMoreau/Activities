@@ -2,6 +2,8 @@ package com.activity.Activity.model;
 
 import jakarta.persistence.*;
 
+import java.util.Set;
+
 @Entity
 @Table(name = "activities")
 public class Activity {
@@ -19,6 +21,12 @@ public class Activity {
     @JoinColumn(name = "agency_id", nullable = false)
     private Agency agency;
 
+    @ManyToMany(mappedBy = "activityList")
+    private Set<Monument> monuments;
+
+    @ManyToOne()
+    @JoinColumn(name = "city_id", nullable = false)
+    private City city;
 
 //    city_id one to many
 //    category_id one to many
@@ -47,6 +55,12 @@ public class Activity {
     @Column(columnDefinition = "TEXT")
     private String notSuitable;
 
+    public Set<Monument> getMonuments(){
+        return monuments;
+    }
+    public void setMonuments(Set<Monument> monuments){
+        this.monuments = monuments;
+    }
     public Long getId() {
         return id;
     }

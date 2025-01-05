@@ -38,6 +38,8 @@ public class JwtUtil {
     public String generateToken(Authentication authentication){
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
+        logger.info("EXP {}" ,new Date(new Date().getTime() + expirationTime));
+
         return Jwts
                 .builder()
                 .setSubject(userDetails.getUsername())
@@ -57,6 +59,7 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token){
+        logger.info("exprition time {} ", expirationTime);
         try{
             Jwts.parserBuilder().setSigningKey(key()).build().parse(token);
             return true;
