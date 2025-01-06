@@ -1,7 +1,9 @@
 package com.activity.Activity.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -27,6 +29,10 @@ public class Activity {
     @ManyToOne()
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
+
+    @OneToMany(mappedBy = "activity", cascade = CascadeType.ALL)
+    @JsonIgnore()
+    private List<Reservation> reservationList;
 
 //    city_id one to many
 //    category_id one to many

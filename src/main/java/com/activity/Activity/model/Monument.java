@@ -29,5 +29,43 @@ public class Monument {
     private Set<Activity> activityList;
 
 
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public City getCity() {
+        return city;
+    }
+
+    public void setCity(City city) {
+        this.city = city;
+    }
+
+    public Set<Activity> getActivityList() {
+        return activityList;
+    }
+
+    public void setActivityList(Set<Activity> activityList) {
+        this.activityList = activityList;
+    }
 }

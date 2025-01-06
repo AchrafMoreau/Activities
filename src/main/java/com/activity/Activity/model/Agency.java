@@ -20,7 +20,7 @@ public class Agency {
     @Column(unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "agency", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "agency", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Activity> activityList;
 
